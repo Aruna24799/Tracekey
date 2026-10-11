@@ -1,26 +1,132 @@
+const ASYNC_VOID = require("../fingerprints/ASYNC_VOID");
+const NULL_CHAIN = require("../fingerprints/NULL_CHAIN");
+const RACE_FETCH = require("../fingerprints/RACE_FETCH");
+const STALE_CLOSURE = require("../fingerprints/STALE_CLOSURE");
+const MISSING_GUARD = require("../fingerprints/MISSING_GUARD");
+const CATCH_SWALLOW = require("../fingerprints/CATCH_SWALLOW");
+const EFFECT_CLEANUP_MISS = require("../fingerprints/EFFECT_CLEANUP_MISS");
+const RESPONSE_UNCHECKED = require("../fingerprints/RESPONSE_UNCHECKED");
+const SECRET_HARDCODE = require("../fingerprints/SECRET_HARDCODE");
+const INFINITE_EFFECT = require("../fingerprints/INFINITE_EFFECT");
+
+const registry = [
+  ASYNC_VOID,
+  NULL_CHAIN,
+  RACE_FETCH,
+  STALE_CLOSURE,
+  MISSING_GUARD,
+  CATCH_SWALLOW,
+  EFFECT_CLEANUP_MISS,
+  RESPONSE_UNCHECKED,
+  SECRET_HARDCODE,
+  INFINITE_EFFECT,
+];
+
 async function fingerprintService(error) {
-  const text = error.toLowerCase();
-
-  if (text.includes("cannot read") || text.includes("undefined") || text.includes("null")) {
-    return { code: "NULL_CHAIN", label: "Null Property Access", severity: "HIGH" };
-  }
-  if (text.includes("async") || text.includes("await") || text.includes("promise")) {
-    return { code: "ASYNC_VOID", label: "Unhandled Async Operation", severity: "HIGH" };
-  }
-  if (text.includes("fetch") || text.includes("network") || text.includes("cors")) {
-    return { code: "RACE_FETCH", label: "Fetch Race Condition", severity: "MEDIUM" };
-  }
-  if (text.includes("timeout") || text.includes("settimeout") || text.includes("interval")) {
-    return { code: "STALE_CLOSURE", label: "Stale Closure in Timer", severity: "MEDIUM" };
-  }
-  if (text.includes("401") || text.includes("403") || text.includes("unauthorized")) {
-    return { code: "AUTH_LEAK", label: "Authentication Failure", severity: "CRITICAL" };
-  }
-  if (text.includes("500") || text.includes("server error")) {
-    return { code: "SERVER_FAULT", label: "Internal Server Error", severity: "HIGH" };
+  if (!error) {
+    return getUnclassifiedResult();
   }
 
-  return { code: "UNKNOWN_PATTERN", label: "Unclassified Error", severity: "LOW" };
+  const matches = [];
+
+  for (const finger of registry) {
+    let matchCount = 0;
+
+    for (const signature of finger.signatures || []) {
+      try {
+        if (signature.test(error)) {
+          matchCount++;
+        }
+      } catch {}
+    }
+
+    if (matchCount > 0) {
+      const matchRatio =
+        matchCount /
+        Math.max(
+          finger.signatures.length,
+          1
+        );
+
+      const confidence = Number(
+        (
+          finger.confidence *
+          (0.8 + 0.2 * matchRatio)
+        ).toFixed(2)
+      );
+
+      matches.push({
+        code: finger.id,
+        label: finger.label,
+
+        category: finger.category,
+
+        description:
+          finger.description ||
+
+          finger.label ||
+
+          "Known error pattern detected.",
+
+        severity: finger.severity,
+
+        confidence,
+
+        fixTemplate:
+          finger.fixTemplate,
+
+        prevention:
+          finger.prevention,
+
+        debugSteps:
+          finger.debugSteps || [],
+      });
+    }
+  }
+
+  if (matches.length > 0) {
+    matches.sort(
+      (a, b) =>
+        b.confidence -
+        a.confidence
+    );
+
+    return matches[0];
+  }
+
+  return getUnclassifiedResult();
 }
 
-module.exports = fingerprintService;
+function getUnclassifiedResult() {
+  return {
+    code: "UNKNOWN_PATTERN",
+
+    label:
+      "Unclassified Error Pattern",
+
+    category:
+      "UNKNOWN_ERROR",
+
+    description:
+      "Unable to match the error against a known fingerprint.",
+
+    severity: "LOW",
+
+    confidence: 0,
+
+    fixTemplate:
+      "Inspect stack trace and runtime logs.",
+
+    prevention:
+      "Enable structured logging and runtime monitoring.",
+
+    debugSteps: [
+      "Review stack trace.",
+      "Inspect logs.",
+      "Check runtime telemetry.",
+    ],
+  };
+}
+
+module.exports =
+  fingerprintService;

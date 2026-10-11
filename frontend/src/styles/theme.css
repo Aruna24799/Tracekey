@@ -1,0 +1,28 @@
+/* src/styles/theme.css */
+/* CSS variables for dark and light themes */
+
+:root {
+  /* Dark theme (default) */
+  --color-bg: #050505;               /* matte black background */
+  --color-surface: #101b2d;          /* dark surface panels */
+  --color-sidebar: #0b1728;          /* sidebar dark */
+  --color-card: #111111;            /* card background */
+  --color-primary: #06b6d4;          /* cyan accent */
+  --color-accent: #8b5cf6;           /* purple accent */
+  --color-text: #e2e8f0;             /* light text */
+}
+
+[data-theme="light"] {
+  --color-bg: #f5f7fa;               /* light background */
+  --color-surface: #ffffff;          /* surface white */
+  --color-sidebar: #f0f2f5;          /* light sidebar */
+  --color-card: #ffffff;            /* white cards */
+  --color-primary: #3b82f6;          /* blue accent */
+  --color-accent: #8b5cf6;           /* keep purple for consistency */
+  --color-text: #1e293b;             /* dark text */
+}
+
+/* Utility classes for transition */
+body {
+  transition: background 0.3s ease, color 0.3s ease;
+}

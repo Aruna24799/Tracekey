@@ -16,7 +16,25 @@ const upload = multer({
   }
 });
 
-// POST /api/ocr/analyze — upload screenshot → OCR → analysis
-router.post("/analyze", auth, upload.single("image"), analyzeFromImage);
+const acceptOcrUpload = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "screenshot", maxCount: 1 }
+]);
+
+const normalizeOcrFile = (req, res, next) => {
+  const uploadedFiles = req.files || {};
+
+  req.file =
+    (uploadedFiles.image && uploadedFiles.image[0]) ||
+    (uploadedFiles.screenshot && uploadedFiles.screenshot[0]) ||
+    req.file ||
+    null;
+
+  next();
+};
+
+// Support both the current React contract and the legacy dashboard contract.
+router.post("/extract", auth, acceptOcrUpload, normalizeOcrFile, analyzeFromImage);
+router.post("/analyze", auth, acceptOcrUpload, normalizeOcrFile, analyzeFromImage);
 
 module.exports = router;

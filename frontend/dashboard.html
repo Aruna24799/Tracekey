@@ -1,38 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TraceKey 2.0 — Intelligence Dashboard</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { 
-      font-family: 'Inter', sans-serif;
-      background: #0B1120; 
-      color: #fff; 
-      min-height: 100vh; 
-      display: flex; 
-      flex-direction: column; 
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0B1120;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
     /* Background Pattern */
     body::before {
       content: "";
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+        radial-gradient(circle at 80% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
       z-index: -1;
       pointer-events: none;
     }
 
-    header { 
+    header {
       background: rgba(30, 41, 59, 0.8);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      padding: 16px 40px; 
+      padding: 16px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -41,57 +50,130 @@
       top: 0;
       z-index: 10;
     }
-    header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-    header h1 span { color: #06B6D4; text-shadow: 0 0 10px rgba(6, 182, 212, 0.5); }
-    
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    header h1 span {
+      color: #06B6D4;
+      text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+    }
+
     .user-controls {
       display: flex;
       align-items: center;
       gap: 24px;
     }
-    .user-info { text-align: right; }
-    .welcome-text { color: #94A3B8; font-size: 13px; margin-bottom: 2px; }
-    .welcome-text span { color: #fff; font-weight: 600; }
-    .user-email { color: #64748B; font-size: 11px; }
-    
+
+    .user-info {
+      text-align: right;
+    }
+
+    .welcome-text {
+      color: #94A3B8;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .welcome-text span {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .user-email {
+      color: #64748B;
+      font-size: 11px;
+    }
+
     .logout-btn {
       padding: 8px 16px;
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.2);
-      border-radius: 8px; color: #EF4444; font-weight: 600; font-size: 13px;
-      cursor: pointer; transition: all 0.2s;
+      border-radius: 8px;
+      color: #EF4444;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .logout-btn:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-1px); }
 
-    main { flex: 1; padding: 40px 20px; max-width: 1200px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
-    
-    .card { 
-      background: rgba(30, 41, 59, 0.5); 
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      transform: translateY(-1px);
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.5);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08); 
-      border-radius: 20px; 
-      padding: 24px; 
-      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
       animation: fadeUp 0.5s ease-out forwards;
       opacity: 0;
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .col-4 { grid-column: span 4; }
-    .col-6 { grid-column: span 6; }
-    .col-8 { grid-column: span 8; }
-    .col-12 { grid-column: span 12; }
+    .col-4 {
+      grid-column: span 4;
+    }
+
+    .col-6 {
+      grid-column: span 6;
+    }
+
+    .col-8 {
+      grid-column: span 8;
+    }
+
+    .col-12 {
+      grid-column: span 12;
+    }
 
     @media (max-width: 900px) {
-      .col-4, .col-6, .col-8 { grid-column: span 12; }
+
+      .col-4,
+      .col-6,
+      .col-8 {
+        grid-column: span 12;
+      }
     }
 
-    h2 { font-size: 18px; margin-bottom: 20px; color: #F8FAFC; display: flex; align-items: center; gap: 8px; }
+    h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #F8FAFC;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     h2::before {
       content: "";
       display: block;
@@ -102,50 +184,131 @@
     }
 
     /* Score Card */
-    .score-container { text-align: center; padding: 10px 0; }
+    .score-container {
+      text-align: center;
+      padding: 10px 0;
+    }
+
     .score-circle {
-      width: 120px; height: 120px; border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
       border: 8px solid rgba(6, 182, 212, 0.1);
       border-top-color: #06B6D4;
       margin: 0 auto 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 32px; font-weight: 700; color: #06B6D4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      color: #06B6D4;
       position: relative;
       transition: color 0.5s;
     }
-    .score-label { font-size: 14px; color: #94A3B8; font-weight: 500; }
+
+    .score-label {
+      font-size: 14px;
+      color: #94A3B8;
+      font-weight: 500;
+    }
 
     /* Status Items */
     .status-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .status-item:last-child { border-bottom: none; }
-    .status-label { font-size: 14px; color: #94A3B8; }
-    .status-value { font-size: 14px; font-weight: 600; }
-    .status-active { color: #10B981; }
-    .status-warning { color: #F59E0B; }
-    .status-danger { color: #EF4444; }
+
+    .status-item:last-child {
+      border-bottom: none;
+    }
+
+    .status-label {
+      font-size: 14px;
+      color: #94A3B8;
+    }
+
+    .status-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .status-active {
+      color: #10B981;
+    }
+
+    .status-warning {
+      color: #F59E0B;
+    }
+
+    .status-danger {
+      color: #EF4444;
+    }
 
     /* Activity Logs */
-    .logs-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 8px; }
-    .logs-list::-webkit-scrollbar { width: 4px; }
-    .logs-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+    .logs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
 
-    .log-entry { 
-      background: rgba(15, 23, 42, 0.4); 
-      padding: 14px; border-radius: 10px; border-left: 3px solid #64748B;
+    .logs-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .logs-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
+    .log-entry {
+      background: rgba(15, 23, 42, 0.4);
+      padding: 14px;
+      border-radius: 10px;
+      border-left: 3px solid #64748B;
       font-size: 13px;
     }
-    .log-entry.success { border-left-color: #10B981; }
-    .log-entry.failed { border-left-color: #EF4444; }
-    .log-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
-    .log-time { color: #64748B; font-size: 11px; }
-    .log-type { font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
 
-    .err { color: #EF4444; margin-top: 10px; font-size: 13px; text-align: center; }
+    .log-entry.success {
+      border-left-color: #10B981;
+    }
+
+    .log-entry.failed {
+      border-left-color: #EF4444;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .log-time {
+      color: #64748B;
+      font-size: 11px;
+    }
+
+    .log-type {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .err {
+      color: #EF4444;
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: center;
+    }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Trace<span>Key</span> 2.0</h1>
@@ -153,11 +316,14 @@
       <div class="user-info">
         <div class="welcome-text">Welcome, <span id="userName">...</span></div>
         <div class="user-email" id="userEmail">...</div>
+        <span id="browserInfo" class="status-value"
+          style="margin-left:8px; color:#64748B; font-size:11px;">Browser</span>
+        <span id="ipAddress" class="status-value" style="margin-left:8px; color:#64748B; font-size:11px;">IP</span>
       </div>
       <button class="logout-btn" onclick="logout()">Disconnect</button>
     </div>
   </header>
-  
+
   <main>
     <div class="col-4" style="display: flex; flex-direction: column; gap: 24px;">
       <div class="card" style="animation-delay: 0.1s;">
@@ -222,7 +388,8 @@
             font-family: 'Inter', monospace; font-size: 13px;
             resize: vertical; transition: border-color 0.3s;
             outline: none;
-          " onfocus="this.style.borderColor='#06B6D4'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+          " onfocus="this.style.borderColor='#06B6D4'"
+            onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
 
           <div style="display: flex; gap: 12px; align-items: center;">
             <button id="analyzeBtn" onclick="runAnalysis()" style="
@@ -245,38 +412,59 @@
           </div>
 
           <!-- Result panel, hidden until analysis completes -->
-          <div id="analyzerResult" style="display:none; background: rgba(15,23,42,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; font-size: 13px; line-height: 1.7;">
+          <div id="analyzerResult"
+            style="display:none; background: rgba(15,23,42,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; font-size: 13px; line-height: 1.7;">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;">
-              <div style="background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2); border-radius: 10px; padding: 14px;">
-                <div style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Category</div>
+              <div
+                style="background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2); border-radius: 10px; padding: 14px;">
+                <div
+                  style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                  Category</div>
                 <div id="resCategory" style="color: #06B6D4; font-weight: 700; font-size: 15px;">—</div>
               </div>
-              <div style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); border-radius: 10px; padding: 14px;">
-                <div style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Fingerprint</div>
+              <div
+                style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); border-radius: 10px; padding: 14px;">
+                <div
+                  style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                  Fingerprint</div>
                 <div id="resFingerprint" style="color: #A78BFA; font-weight: 700; font-size: 15px;">—</div>
               </div>
               <div id="resSeverityBox" style="border-radius: 10px; padding: 14px;">
-                <div style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Severity</div>
+                <div
+                  style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                  Severity</div>
                 <div id="resSeverity" style="font-weight: 700; font-size: 15px;">—</div>
               </div>
             </div>
 
-            <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px; display: flex; flex-direction: column; gap: 14px;">
+            <div
+              style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px; display: flex; flex-direction: column; gap: 14px;">
               <div>
-                <div style="color: #94A3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Root Cause</div>
+                <div
+                  style="color: #94A3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                  Root Cause</div>
                 <div id="resRootCause" style="color: #CBD5E1;"></div>
               </div>
               <div>
-                <div style="color: #94A3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Fix</div>
-                <div id="resFix" style="color: #10B981; font-family: monospace; background: rgba(16,185,129,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.1); white-space: pre-wrap;"></div>
+                <div
+                  style="color: #94A3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                  Fix</div>
+                <div id="resFix"
+                  style="color: #10B981; font-family: monospace; background: rgba(16,185,129,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.1); white-space: pre-wrap;">
+                </div>
               </div>
               <div>
-                <div style="color: #94A3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Prevention</div>
+                <div
+                  style="color: #94A3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                  Prevention</div>
                 <div id="resPrevention" style="color: #CBD5E1;"></div>
               </div>
-              <div id="resSecurityBox" style="display:none; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 14px;">
-                <div style="color: #EF4444; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">⚠️ Security Threats Detected</div>
+              <div id="resSecurityBox"
+                style="display:none; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 14px;">
+                <div
+                  style="color: #EF4444; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                  ⚠️ Security Threats Detected</div>
                 <div id="resThreats" style="color: #FCA5A5; font-size: 13px;"></div>
               </div>
             </div>
@@ -296,12 +484,11 @@
             border:2px dashed rgba(255,255,255,0.12);border-radius:12px;
             padding:32px 20px;cursor:pointer;transition:border-color 0.3s,background 0.3s;
             background:rgba(15,23,42,0.3);
-          "
-            ondragover="event.preventDefault();this.style.borderColor='#06B6D4';"
-            ondragleave="this.style.borderColor='rgba(255,255,255,0.12)';"
-            ondrop="handleOcrDrop(event)">
+          " ondragover="event.preventDefault();this.style.borderColor='#06B6D4';"
+            ondragleave="this.style.borderColor='rgba(255,255,255,0.12)';" ondrop="handleOcrDrop(event)">
             <span style="font-size:32px;margin-bottom:8px;">📷</span>
-            <span style="color:#94A3B8;font-size:13px;text-align:center;">Drag &amp; drop a screenshot<br>or click to browse</span>
+            <span style="color:#94A3B8;font-size:13px;text-align:center;">Drag &amp; drop a screenshot<br>or click to
+              browse</span>
             <span id="ocrFileName" style="color:#06B6D4;font-size:12px;margin-top:8px;"></span>
           </label>
           <input id="ocrFileInput" type="file" accept="image/*" style="display:none;" onchange="previewOcrFile(this)">
@@ -328,7 +515,8 @@
 
           <!-- OCR extracted text preview -->
           <div id="ocrExtracted" style="display:none;">
-            <div style="color:#64748B;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Extracted Text</div>
+            <div style="color:#64748B;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+              Extracted Text</div>
             <div id="ocrExtractedText" style="
               background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.08);
               border-radius:8px;padding:12px;font-size:12px;color:#94A3B8;
@@ -337,9 +525,11 @@
           </div>
 
           <!-- OCR result mirrors analyzer result style -->
-          <div id="ocrResult" style="display:none;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;font-size:13px;">
+          <div id="ocrResult"
+            style="display:none;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;font-size:13px;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-              <div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:8px;padding:12px;">
+              <div
+                style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:8px;padding:12px;">
                 <div style="color:#64748B;font-size:10px;text-transform:uppercase;margin-bottom:4px;">Category</div>
                 <div id="ocrCategory" style="color:#06B6D4;font-weight:700;">—</div>
               </div>
@@ -348,10 +538,14 @@
                 <div id="ocrSeverity" style="font-weight:700;">—</div>
               </div>
             </div>
-            <div style="color:#94A3B8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Root Cause</div>
+            <div style="color:#94A3B8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+              Root Cause</div>
             <div id="ocrRootCause" style="color:#CBD5E1;margin-bottom:12px;"></div>
-            <div style="color:#94A3B8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Fix</div>
-            <div id="ocrFix" style="color:#10B981;font-family:monospace;background:rgba(16,185,129,0.05);padding:10px;border-radius:8px;border:1px solid rgba(16,185,129,0.1);white-space:pre-wrap;"></div>
+            <div style="color:#94A3B8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+              Fix</div>
+            <div id="ocrFix"
+              style="color:#10B981;font-family:monospace;background:rgba(16,185,129,0.05);padding:10px;border-radius:8px;border:1px solid rgba(16,185,129,0.1);white-space:pre-wrap;">
+            </div>
           </div>
         </div>
       </div>
@@ -374,7 +568,8 @@
             ">0 critical</span>
           </div>
         </div>
-        <div id="reportsList" style="display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;padding-right:6px;">
+        <div id="reportsList"
+          style="display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;padding-right:6px;">
           <p style="color:#64748B;text-align:center;margin-top:20px;">Loading reports...</p>
         </div>
       </div>
@@ -382,7 +577,9 @@
   </main>
 
   <script>
-    const API = "http://localhost:5000/api";
+    const API = window.location.port === "5173"
+      ? `${window.location.protocol}//${window.location.hostname}:5000/api`
+      : `${window.location.origin}/api`;
     const token = localStorage.getItem('tk_token');
 
     async function checkAuth() {
@@ -410,20 +607,20 @@
 
         const scoreData = await scoreRes.json();
         const activityData = await activityRes.json();
-        
+
         // Update Score
         const circle = document.getElementById('scoreValue');
         const status = document.getElementById('scoreStatus');
         circle.textContent = `${scoreData.score}%`;
         status.textContent = `Status: ${scoreData.status}`;
-        
+
         if (scoreData.score < 50) circle.style.color = "#EF4444";
         else if (scoreData.score < 80) circle.style.color = "#F59E0B";
         else circle.style.color = "#10B981";
 
         // Update System Status
         document.getElementById('activeSessions').textContent = scoreData.details.activeSessions;
-        
+
         const deviceStatus = document.getElementById('deviceStatus');
         if (scoreData.details.knownDevices <= 1) {
           deviceStatus.textContent = "Trusted Device";
@@ -437,7 +634,7 @@
         if (activityData.summary) {
           document.getElementById('totalReportsCount').textContent = activityData.summary.totalReports;
           document.getElementById('recentFailuresCount').textContent = activityData.summary.failedLogins;
-          
+
           const healthEl = document.getElementById('accountHealth');
           if (activityData.summary.criticalReports > 0) {
             healthEl.textContent = "Critical Issues";
@@ -460,7 +657,7 @@
         const logs = await res.json();
         const container = document.getElementById('logsList');
         container.innerHTML = '';
-        
+
         if (logs.length === 0) {
           container.innerHTML = '<p style="color: #64748B; text-align: center; margin-top: 20px;">No recent activity.</p>';
           return;
@@ -470,7 +667,7 @@
           const entry = document.createElement('div');
           entry.className = `log-entry ${log.loginStatus}`;
           const date = new Date(log.createdAt).toLocaleString();
-          
+
           entry.innerHTML = `
             <div class="log-header">
               <span class="log-type" style="color: ${log.loginStatus === 'success' ? '#10B981' : '#EF4444'}">
@@ -496,7 +693,7 @@
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-      } catch (e) {}
+      } catch (e) { }
       localStorage.removeItem('tk_token');
       localStorage.removeItem('tk_user');
       window.location.href = 'login.html';
@@ -509,10 +706,10 @@
       loadLogs();
       loadReports();
       loadSessions();
-      
+
       // Basic browser info
       document.getElementById('browserInfo').textContent = navigator.userAgent.split(' ')[0];
-      
+
       // Fetch IP
       fetch('https://api.ipify.org?format=json')
         .then(r => r.json())
@@ -523,9 +720,9 @@
     // ── Error Analyzer ──────────────────────────────────────────────────────
     const SEVERITY_COLORS = {
       CRITICAL: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)', text: '#EF4444' },
-      HIGH:     { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)', text: '#F59E0B' },
-      MEDIUM:   { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.3)', text: '#60A5FA' },
-      LOW:      { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)', text: '#10B981' }
+      HIGH: { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)', text: '#F59E0B' },
+      MEDIUM: { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.3)', text: '#60A5FA' },
+      LOW: { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)', text: '#10B981' }
     };
 
     async function runAnalysis() {
@@ -633,7 +830,7 @@
             critBadge.textContent = `${act.summary.criticalReports} critical`;
             critBadge.style.display = 'inline-block';
           }
-        } catch (_) {}
+        } catch (_) { }
 
         if (!Array.isArray(reports) || reports.length === 0) {
           list.innerHTML = '<p style="color:#64748B;text-align:center;margin-top:20px;">No analysis reports yet.</p>';
@@ -654,7 +851,7 @@
             cursor:pointer;transition:background 0.2s;
           `;
           el.onmouseover = () => el.style.background = 'rgba(15,23,42,0.7)';
-          el.onmouseout  = () => el.style.background = 'rgba(15,23,42,0.4)';
+          el.onmouseout = () => el.style.background = 'rgba(15,23,42,0.4)';
           el.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
               <div style="display:flex;align-items:center;gap:8px;">
@@ -705,10 +902,10 @@
     }
 
     async function runOcrAnalysis() {
-      const statusEl  = document.getElementById('ocrStatus');
-      const btn       = document.getElementById('ocrBtn');
-      const loader    = document.getElementById('ocrBtnLoader');
-      const btnText   = document.getElementById('ocrBtnText');
+      const statusEl = document.getElementById('ocrStatus');
+      const btn = document.getElementById('ocrBtn');
+      const loader = document.getElementById('ocrBtnLoader');
+      const btnText = document.getElementById('ocrBtnText');
       const resultBox = document.getElementById('ocrResult');
       const extracted = document.getElementById('ocrExtracted');
 
@@ -729,7 +926,7 @@
         const form = new FormData();
         form.append('image', ocrSelectedFile);
 
-        const res = await fetch(`${API}/ocr/analyze`, {
+        const res = await fetch(`${API}/ocr/extract`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
           body: form
@@ -747,22 +944,22 @@
         extracted.style.display = 'block';
 
         // Populate result
-        document.getElementById('ocrCategory').textContent  = data.category || '—';
+        document.getElementById('ocrCategory').textContent = data.category || '—';
         document.getElementById('ocrRootCause').textContent = data.rootCause || '—';
-        document.getElementById('ocrFix').textContent       = data.fix || '—';
+        document.getElementById('ocrFix').textContent = data.fix || '—';
 
         const sev = (data.severity || 'MEDIUM').toUpperCase();
-        const sc  = SEVERITY_COLORS[sev] || SEVERITY_COLORS.MEDIUM;
+        const sc = SEVERITY_COLORS[sev] || SEVERITY_COLORS.MEDIUM;
         const sevBox = document.getElementById('ocrSevBox');
         const sevVal = document.getElementById('ocrSeverity');
         sevBox.style.background = sc.bg;
-        sevBox.style.border     = `1px solid ${sc.border}`;
-        sevVal.style.color      = sc.text;
-        sevVal.textContent      = sev;
+        sevBox.style.border = `1px solid ${sc.border}`;
+        sevVal.style.color = sc.text;
+        sevVal.textContent = sev;
 
         resultBox.style.display = 'block';
-        statusEl.textContent    = `✅ Report #${data.reportId?.toString().slice(-6) || 'N/A'}`;
-        statusEl.style.color    = '#10B981';
+        statusEl.textContent = `✅ Report #${data.reportId?.toString().slice(-6) || 'N/A'}`;
+        statusEl.style.color = '#10B981';
 
         // Refresh reports list to include new OCR report
         loadReports();
@@ -774,7 +971,7 @@
       } finally {
         btn.disabled = false;
         loader.style.display = 'none';
-        btnText.textContent  = '🔍 Extract & Analyze';
+        btnText.textContent = '🔍 Extract & Analyze';
       }
     }
 
@@ -801,7 +998,7 @@
           entry.style.alignItems = 'flex-start';
           entry.style.gap = '4px';
           entry.style.padding = '10px 0';
-          
+
           entry.innerHTML = `
             <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
               <span class="status-value" style="font-size: 13px;">
@@ -844,4 +1041,5 @@
     }
   </script>
 </body>
+
 </html>

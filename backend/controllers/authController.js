@@ -3,9 +3,11 @@ const LoginLog = require("../models/LoginLog");
 const Session = require("../models/Session");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { generateAIExplanation } = require("../services/aiExplanationService");
 
 // REGISTER
 exports.register = async (req, res) => {
+  console.log(`[ROUTE HIT] POST /api/auth/register | Mongoose ReadyState: ${require("mongoose").connection.readyState}`);
   try {
     const { name, email, password } = req.body;
 
@@ -38,6 +40,7 @@ exports.register = async (req, res) => {
 
 // LOGIN
 exports.login = async (req, res) => {
+  console.log(`[ROUTE HIT] POST /api/auth/login | Email: ${req.body?.email} | Mongoose ReadyState: ${require("mongoose").connection.readyState}`);
   try {
     const { email, password, fingerprint } = req.body;
 
@@ -117,10 +120,11 @@ exports.login = async (req, res) => {
 
 // VERIFY TOKEN
 exports.verify = async (req, res) => {
+  console.log(`[ROUTE HIT] GET /api/auth/verify | User ID: ${req.user?.id} | Mongoose ReadyState: ${require("mongoose").connection.readyState}`);
   try {
     const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     res.json({ valid: true, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -143,12 +147,12 @@ exports.logout = async (req, res) => {
 // GET ACTIVE SESSIONS
 exports.getSessions = async (req, res) => {
   try {
-    const sessions = await Session.find({ 
-      userId: req.user.id, 
+    const sessions = await Session.find({
+      userId: req.user.id,
       active: true,
       expiresAt: { $gt: new Date() }
     }).sort({ createdAt: -1 });
-    
+
     res.json(sessions);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -164,13 +168,285 @@ exports.revokeSession = async (req, res) => {
       { active: false },
       { new: true }
     );
-    
+
     if (!session) {
       return res.status(404).json({ message: "Session not found or already revoked" });
     }
-    
+
     res.json({ message: "Session revoked successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+const crypto = require("crypto");
+
+exports.getSettings = async (
+  req,
+  res
+) => {
+  try {
+    const user =
+      await User.findById(
+        req.user.id
+      ).select(
+        "name email settings"
+      );
+
+    res.json({
+      name: user?.name || "",
+      email: user?.email || "",
+      settings:
+        user?.settings || {}
+    });
+  } catch (error) {
+    res.status(500).json({
+      message:
+        error.message
+    });
+  }
+};
+
+exports.saveSettings = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      theme,
+      notifications,
+      aiProvider,
+      hfApiKey,
+      name,
+      email,
+      password
+    } = req.body;
+
+    const user =
+      await User.findById(
+        req.user.id
+      );
+
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser && String(existingUser._id) !== String(user._id)) {
+        return res.status(409).json({
+          message: "Email is already in use by another account"
+        });
+      }
+      user.email = email;
+    }
+
+    if (typeof name === "string" && name.trim()) {
+      user.name = name.trim();
+    }
+
+    if (typeof password === "string" && password.trim()) {
+      const bcrypt = require("bcryptjs");
+      user.password = await bcrypt.hash(password, 12);
+    }
+
+    if (!user.settings) {
+      user.settings = {};
+    }
+
+    if (theme) {
+      user.settings.theme =
+        theme;
+    }
+
+    if (
+      typeof notifications ===
+      "boolean"
+    ) {
+      user.settings.notifications =
+        notifications;
+    }
+
+    if (aiProvider) {
+      user.settings.aiProvider =
+        aiProvider;
+    }
+
+    if (typeof hfApiKey === "string") {
+      user.settings.hfApiKey =
+        hfApiKey;
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      settings:
+        user.settings
+    });
+  } catch (error) {
+    res.status(500).json({
+      message:
+        error.message
+    });
+  }
+};
+
+exports.generateApiKey =
+  async (req, res) => {
+    try {
+      const {
+        name =
+        "Default Key"
+      } = req.body;
+
+      const apiKey =
+        crypto.randomBytes(32)
+          .toString("hex");
+
+      const user =
+        await User.findById(
+          req.user.id
+        );
+
+      user.settings.apiKeys.push(
+        {
+          name,
+          key: apiKey
+        }
+      );
+
+      await user.save();
+
+      res.json({
+        success: true,
+        apiKey
+      });
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message
+      });
+    }
+  };
+
+exports.revokeApiKey =
+  async (req, res) => {
+    try {
+      const { key } =
+        req.params;
+
+      const user =
+        await User.findById(
+          req.user.id
+        );
+
+      user.settings.apiKeys =
+        user.settings.apiKeys.filter(
+          k =>
+            k.key !== key
+        );
+
+      await user.save();
+
+      res.json({
+        success: true
+      });
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message
+      });
+    }
+  };
+
+exports.addTeamMember =
+  async (req, res) => {
+    try {
+      const user =
+        await User.findById(
+          req.user.id
+        );
+
+      user.settings.teamMembers.push(
+        req.body
+      );
+
+      await user.save();
+
+      res.json({
+        success: true
+      });
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message
+      });
+    }
+  };
+
+exports.removeTeamMember =
+  async (req, res) => {
+    try {
+      const {
+        email
+      } = req.params;
+
+      const user =
+        await User.findById(
+          req.user.id
+        );
+
+      user.settings.teamMembers =
+        user.settings.teamMembers.filter(
+          m =>
+            m.email !== email
+        );
+
+      await user.save();
+
+      res.json({
+        success: true
+      });
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message
+      });
+    }
+  };
+
+exports.testAiConnection = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("settings");
+    const apiKey = user?.settings?.hfApiKey || process.env.HF_API_KEY || "";
+
+    if (!apiKey) {
+      return res.status(400).json({
+        success: false,
+        connected: false,
+        provider: user?.settings?.aiProvider || "huggingface",
+        message: "No Hugging Face API key configured"
+      });
+    }
+
+    const result = await generateAIExplanation(
+      "TraceKey AI connection test.",
+      "UNKNOWN_ERROR",
+      apiKey
+    );
+
+    const connected = result?.provider === "Hugging Face";
+
+    res.json({
+      success: true,
+      connected,
+      provider: result?.provider || "explainService (Offline Fallback)",
+      message: connected
+        ? "Hugging Face connection verified"
+        : "Hugging Face unavailable, offline fallback in use"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      connected: false,
+      message: error.message
+    });
   }
 };

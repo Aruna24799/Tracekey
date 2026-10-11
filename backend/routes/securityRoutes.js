@@ -1,10 +1,30 @@
 const express = require("express");
 const router = express.Router();
-const { getSecurityScore, getActivityTimeline } = require("../controllers/securityController");
+
 const auth = require("../middleware/authMiddleware");
 
-router.get("/score", auth, getSecurityScore);
-router.get("/activity", auth, getActivityTimeline);
+const {
+  getSecurityScore,
+  getActivityTimeline,
+  getSecurityFindings
+} = require("../controllers/securityController");
+
+router.get(
+  "/score",
+  auth,
+  getSecurityScore
+);
+
+router.get(
+  "/activity",
+  auth,
+  getActivityTimeline
+);
+
+router.get(
+  "/findings",
+  auth,
+  getSecurityFindings
+);
 
 module.exports = router;
-

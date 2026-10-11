@@ -1,0 +1,97 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+id_rsa
+id_ed25519
+
+# Credentials and secret files
+secrets/
+credentials/
+**/secrets/
+**/credentials/
+service-account*.json
+
+# Database files and backups
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bak
+mongodb-data/
+data/db/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# Build output
+dist/
+build/
+coverage/
+
+# Local configuration
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Uploaded files and generated reports
+uploads/
+backend/uploads/
+reports/generated/
+
+# Local environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Local backups and scratch files
+old backup/
+scratch/
+
+
+*.traineddata
+backend/fingerprints/SECRET_HARDCODE.js
+search_mongo_uri.js
+test.js
+power of n.txt
+row n col sum arr.txt
+transpose arr.txt
+public index
+utils/New Microsoft Excel Worksheet.xlsx
+utils/New Text Document.txt
+
+
+@'
+ErrorAnalysis-source.txt
+LINEAR SEARCH.txt
+OcrPage-source.txt
+array upper triangle.txt
+gcd.txt
+method overloading.txt
+backend/controllers/.txt
+backend/controllers/New Text Document.txt
+backend/test.js
+backend/test_e2e_all_modules.js
+*.traineddata
+backend/fingerprints/SECRET_HARDCODE.js
+search_mongo_uri.js
+test.js
+'@ | Add-Content .gitignore

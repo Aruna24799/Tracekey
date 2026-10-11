@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TraceKey AI Debug Console</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+    <style>
+        body {
+            background: #020617;
+            color: #e2e8f0;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        .chat-box {
+            background: #000;
+            padding: 15px;
+            height: 450px;
+            overflow-y: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .msg {
+            margin: 10px 0;
+        }
+
+        .user { color: #38bdf8; }
+        .bot { color: #22c55e; }
+
+        .card {
+            background: #0f172a;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #38bdf8;
+        }
+
+        input, button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+        }
+
+        input {
+            width: 60%;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🚀 TraceKey AI Debug Console</h1>
+
+<div class="chat-box" id="chat"></div>
+
+<input id="input" placeholder="Paste error or describe issue...">
+<button onclick="send()">Analyze</button>
+
+<br><br>
+
+<input type="file" id="imageInput">
+<button onclick="analyzeImage()">Upload Image</button>
+
+<script>
+
+const chat = document.getElementById("chat");
+
+// ENTER KEY SUPPORT
+document.getElementById("input").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") send();
+});
+
+// message
+function addMsg(text, type="bot") {
+    const div = document.createElement("div");
+    div.className = "msg " + type;
+    div.innerText = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// card
+function addCard(title, content) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<b>${title}</b><br>${content}`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// send request
+async function send() {
+
+    const inputBox = document.getElementById("input");
+    const input = inputBox.value.trim();
+
+    if (!input) return;
+
+    inputBox.value = "";
+
+    addMsg("You: " + input, "user");
+    addMsg("⏳ Analyzing...", "bot");
+
+    try {
+        const res = await fetch("/analyze", {   // 🔥 FIXED (no localhost hardcode)
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ error: input })
+        });
+
+        const data = await res.json();
+
+        showResult(data);
+
+    } catch (err) {
+        addMsg("❌ Backend not connected", "bot");
+    }
+}
+
+// show result
+function showResult(data) {
+
+    addMsg("🔍 Analysis Complete");
+
+    // 🔬 AUTOPSY
+    addCard("🔬 Error Autopsy",
+        `
+        <b>Type:</b> ${data.type}<br>
+        <b>Layer:</b> ${data.layer}<br>
+        <b>Explanation:</b> ${data.explanation}
+        `
+    );
+
+    // 🧠 ROOT CAUSES
+    addCard("🧠 Root Cause Tree",
+        data.rootCauses?.map(c => "→ " + c).join("<br>") || "No data"
+    );
+
+    // 📍 LOCATION
+    addCard("📍 Location Mapping",
+        `
+        <b>File:</b> ${data.location?.file || "Unknown"}<br>
+        <b>Function:</b> ${data.location?.function || "Unknown"}<br>
+        <b>Line:</b> ${data.location?.line || "-"}
+        `
+    );
+
+    // 🛠 FIX
+    addCard("🛠 Fix",
+        data.fix?.map(f => "• " + f).join("<br>") || "No data"
+    );
+
+    // 🚨 SECURITY
+    if (data.security) {
+        addCard("🚨 Security Alert",
+            `<b>${data.security.warning}</b><br>Risk: ${data.security.risk}`
+        );
+    }
+
+    addMsg("✅ Done");
+}
+
+// OCR IMAGE
+async function analyzeImage() {
+
+    const file = document.getElementById("imageInput").files[0];
+    if (!file) return alert("Upload image");
+
+    addMsg("🖼 Reading image...", "bot");
+
+    const { data: { text } } = await Tesseract.recognize(file, 'eng');
+
+    addMsg("Extracted text ready for analysis", "bot");
+
+    document.getElementById("input").value = text;
+    send();
+}
+
+</script>
+
+</body>
+</html>

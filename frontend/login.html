@@ -172,7 +172,9 @@
 </div>
 
 <script>
-  const API = "http://localhost:5000/api";
+  const API = window.location.port === "5173"
+    ? `${window.location.protocol}//${window.location.hostname}:5000/api`
+    : `${window.location.origin}/api`;
 
   function getFingerprint() {
     return {

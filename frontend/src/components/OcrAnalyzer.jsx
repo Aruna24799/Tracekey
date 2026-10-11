@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function OcrAnalyzer({ token, onNewReport }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -8,6 +8,8 @@ function OcrAnalyzer({ token, onNewReport }) {
   const [statusColor, setStatusColor] = useState('#64748B');
   const [result, setResult] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [persona, setPersona] = useState('developer'); // 'developer', 'beginner', 'security', 'ops'
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const SEVERITY_COLORS = {
     CRITICAL: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)', text: '#EF4444' },
@@ -16,12 +18,15 @@ function OcrAnalyzer({ token, onNewReport }) {
     LOW:      { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)', text: '#10B981' }
   };
 
+  const API_BASE = window.location.port === "5173" ? "http://localhost:5000/api" : "/api";
+
   const previewOcrFile = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
       setFileName(file.name);
       setStatus('');
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -63,7 +68,7 @@ function OcrAnalyzer({ token, onNewReport }) {
       const form = new FormData();
       form.append('image', selectedFile);
 
-      const res = await fetch('http://localhost:5000/api/ocr/analyze', {
+      const res = await fetch(`${API_BASE}/ocr/extract`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form
@@ -95,26 +100,51 @@ function OcrAnalyzer({ token, onNewReport }) {
   const sev = (result?.severity || 'MEDIUM').toUpperCase();
   const sc = SEVERITY_COLORS[sev] || SEVERITY_COLORS.MEDIUM;
 
+  const getPersonaContent = () => {
+    if (!result) return {};
+    if (result.personas && result.personas[persona]) {
+      return result.personas[persona];
+    }
+    return {
+      rootCause: result.rootCause,
+      fix: result.fix,
+      prevention: result.prevention,
+      debugSteps: result.debugSteps
+    };
+  };
+
+  const personaContent = getPersonaContent();
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const activePersonaTabStyle = (active) => ({
+    padding: '4px 10px',
+    background: active ? 'rgba(6, 182, 212, 0.15)' : 'transparent',
+    border: 'none',
+    borderBottom: active ? '2px solid #06B6D4' : '2px solid transparent',
+    color: active ? '#06B6D4' : '#64748B',
+    cursor: 'pointer',
+    fontSize: '10px',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    transition: 'all 0.2s'
+  });
+
   return (
-    <div className="card" style={{ animationDelay: '0.7s' }}>
+    <div className="premium-card">
       <h2>OCR Screenshot Analyzer</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {/* Drop zone */}
-        <label 
-          id="ocrDropZone" 
-          htmlFor="ocrFileInput" 
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: isDragOver ? '2px dashed #06B6D4' : '2px dashed rgba(255,255,255,0.12)',
-            borderRadius: '12px',
-            padding: '32px 20px',
-            cursor: 'pointer',
-            transition: 'border-color 0.3s, background 0.3s',
-            background: 'rgba(15,23,42,0.3)'
-          }}
+        <label
+          id="ocrDropZone"
+          htmlFor="ocrFileInput"
+          className={`ocr-dropzone ${isDragOver ? 'dragover' : ''}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -129,47 +159,24 @@ function OcrAnalyzer({ token, onNewReport }) {
             </span>
           )}
         </label>
-        <input 
-          id="ocrFileInput" 
-          type="file" 
-          accept="image/*" 
-          style={{ display: 'none' }} 
-          onChange={previewOcrFile} 
+        <input
+          id="ocrFileInput"
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={previewOcrFile}
         />
+        {previewUrl && (
+          <img src={previewUrl} alt="Preview" className="ocr-preview" />
+        )}
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button 
-            onClick={runOcrAnalysis} 
+          <button
+            className="btn-primary"
+            onClick={runOcrAnalysis}
             disabled={loading}
-            style={{
-              width: 'auto',
-              padding: '12px 28px',
-              background: 'linear-gradient(135deg, #8B5CF6, #06B6D4)',
-              border: 'none',
-              borderRadius: '10px',
-              color: '#fff',
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              boxShadow: '0 4px 14px rgba(139,92,246,0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
           >
-            {loading && (
-              <span className="loader" style={{
-                width: '14px',
-                height: '14px',
-                border: '2px solid #fff',
-                borderBottomColor: 'transparent',
-                borderRadius: '50%',
-                display: 'block'
-              }}></span>
-            )}
+            {loading && <span className="loader" />}
             <span>{loading ? 'Extracting...' : '🔍 Extract & Analyze'}</span>
           </button>
           <span style={{ fontSize: '13px', color: statusColor }}>{status}</span>
@@ -178,7 +185,21 @@ function OcrAnalyzer({ token, onNewReport }) {
         {/* OCR extracted text preview */}
         {result && result.extractedText && (
           <div style={{ textAlign: 'left' }}>
-            <div style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Extracted Text</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Extracted Text</span>
+              {result.confidence > 0 && (
+                <span style={{
+                  fontSize: '11px',
+                  color: result.confidence > 75 ? '#10B981' : '#F59E0B',
+                  fontWeight: 'bold',
+                  background: 'rgba(255,255,255,0.03)',
+                  padding: '2px 8px',
+                  borderRadius: '4px'
+                }}>
+                  Accuracy: {result.confidence}%
+                </span>
+              )}
+            </div>
             <div style={{
               background: 'rgba(15,23,42,0.5)',
               border: '1px solid rgba(255,255,255,0.08)',
@@ -196,13 +217,40 @@ function OcrAnalyzer({ token, onNewReport }) {
           </div>
         )}
 
+        {/* Structured traces list */}
+        {result && result.structuredTrace && result.structuredTrace.length > 0 && (
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+              Detected Stack Call Sites ({result.structuredTrace.length})
+            </div>
+            <div style={{
+              background: 'rgba(15,23,42,0.3)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: '8px',
+              padding: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px',
+              maxHeight: '120px',
+              overflowY: 'auto'
+            }}>
+              {result.structuredTrace.map((site, sIdx) => (
+                <div key={sIdx} style={{ fontSize: '11px', color: '#CBD5E1', fontFamily: 'monospace', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+                  <span style={{ color: '#8B5CF6' }}>at {site.method}</span>
+                  <span style={{ color: '#06B6D4' }}>{site.file}:{site.line}:{site.column}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* OCR diagnostic result */}
         {result && (
-          <div style={{ 
-            background: 'rgba(15,23,42,0.5)', 
-            border: '1px solid rgba(255,255,255,0.08)', 
-            borderRadius: '12px', 
-            padding: '16px', 
+          <div style={{
+            background: 'rgba(15,23,42,0.5)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '12px',
+            padding: '16px',
             fontSize: '13px',
             textAlign: 'left'
           }}>
@@ -211,8 +259,8 @@ function OcrAnalyzer({ token, onNewReport }) {
                 <div style={{ color: '#64748B', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>Category</div>
                 <div style={{ color: '#06B6D4', fontWeight: 700 }}>{result.category || '—'}</div>
               </div>
-              <div style={{ 
-                borderRadius: '8px', 
+              <div style={{
+                borderRadius: '8px',
                 padding: '12px',
                 background: sc.bg,
                 border: `1px solid ${sc.border}`
@@ -221,12 +269,30 @@ function OcrAnalyzer({ token, onNewReport }) {
                 <div style={{ color: sc.text, fontWeight: 700 }}>{sev}</div>
               </div>
             </div>
-            <div style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Root Cause</div>
-            <div style={{ color: '#CBD5E1', marginBottom: '12px' }}>{result.rootCause || '—'}</div>
-            <div style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Fix</div>
-            <div style={{ color: '#10B981', fontFamily: 'monospace', background: 'rgba(16,185,129,0.05)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.1)', whiteSpace: 'pre-wrap' }}>
-              {result.fix || '—'}
+
+            {/* Persona Switcher Tabs */}
+            <div style={{
+              display: 'flex',
+              gap: '4px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              marginBottom: '14px'
+            }}>
+              <button style={activePersonaTabStyle(persona === 'beginner')} onClick={() => setPersona('beginner')}>Beginner 👶</button>
+              <button style={activePersonaTabStyle(persona === 'developer')} onClick={() => setPersona('developer')}>Developer ⚙️</button>
+              <button style={activePersonaTabStyle(persona === 'security')} onClick={() => setPersona('security')}>Security 🛡️</button>
+              <button style={activePersonaTabStyle(persona === 'ops')} onClick={() => setPersona('ops')}>Ops 🎛️</button>
             </div>
+
+            <div style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Root Cause ({persona})</div>
+            <div style={{ color: '#CBD5E1', marginBottom: '12px' }}>{personaContent.rootCause || '—'}</div>
+
+            <div style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Fix Guidance</div>
+            <div style={{ color: '#10B981', fontFamily: 'monospace', background: 'rgba(16,185,129,0.05)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.1)', whiteSpace: 'pre-wrap', fontSize: '12px', marginBottom: '12px' }}>
+              {personaContent.fix || '—'}
+            </div>
+
+            <div style={{ color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Prevention Strategy</div>
+            <div style={{ color: '#CBD5E1' }}>{personaContent.prevention || '—'}</div>
           </div>
         )}
       </div>

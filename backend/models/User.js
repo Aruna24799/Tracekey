@@ -22,6 +22,34 @@ const userSchema = new mongoose.Schema({
     enum: ["developer", "ops", "admin"],
     default: "developer"
   },
+  settings: {
+    theme: {
+      type: String,
+      default: "dark"
+    },
+    notifications: {
+      type: Boolean,
+      default: true
+    },
+    aiProvider: {
+      type: String,
+      default: "huggingface"
+    },
+    hfApiKey: {
+      type: String,
+      default: ""
+    },
+    apiKeys: [{
+      name: String,
+      key: String,
+      createdAt: { type: Date, default: Date.now }
+    }],
+    teamMembers: [{
+      name: String,
+      email: String,
+      role: { type: String, enum: ["developer", "ops", "admin", "qa", "manager"], default: "developer" }
+    }]
+  },
   createdAt: {
     type: Date,
     default: Date.now
